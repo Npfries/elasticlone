@@ -1,0 +1,41 @@
+import { FastifyInstance, FastifyRequest, FastifyReply, RouteHandlerMethod } from "fastify";
+
+interface IRequest<T> extends FastifyRequest {
+    body: T
+}
+
+// @ts-ignore
+interface IReply<T> extends FastifyReply {
+    send(data: T): void 
+}
+
+type IHandler<Request, Reply> = (request: IRequest<Request>,reply: IReply<Reply>) => void
+
+export abstract class Controller {
+    private _app: FastifyInstance
+    private _route: string = ''
+    constructor(app: FastifyInstance, route: string) {
+        this._app = app
+        this._route = route
+    }
+
+    get<Reply>(cb: IHandler<void, Reply>) {
+        // @ts-ignore
+        this._app.get(this._route, cb)
+    }
+
+    put<Request, Reply>(cb: IHandler<Request, Reply>) {
+        // @ts-ignore
+        this._app.put(this._route, cb)
+    }
+
+    post<Request, Reply>(cb: IHandler<Request, Reply>) {
+        // @ts-ignore
+        this._app.post(this._route, cb)
+    }
+
+    delete<Reply>(cb: IHandler<void, Reply>) {
+        // @ts-ignore
+        this._app.delete(this._route, cb)
+    }
+}
