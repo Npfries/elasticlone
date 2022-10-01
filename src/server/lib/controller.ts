@@ -1,4 +1,9 @@
-import { FastifyInstance, FastifyRequest, FastifyReply, RouteHandlerMethod } from "fastify";
+import {
+    FastifyInstance,
+    FastifyRequest,
+    FastifyReply,
+    RouteHandlerMethod,
+} from 'fastify'
 
 interface IRequest<T> extends FastifyRequest {
     body: T
@@ -6,36 +11,44 @@ interface IRequest<T> extends FastifyRequest {
 
 // @ts-ignore
 interface IReply<T> extends FastifyReply {
-    send(data: T): void 
+    send(data: T): void
 }
 
-type IHandler<Request, Reply> = (request: IRequest<Request>,reply: IReply<Reply>) => void
+type IHandler<Request, Reply> = (
+    request: IRequest<Request>,
+    reply: IReply<Reply>
+) => void
 
 export abstract class Controller {
     private _app: FastifyInstance
     private _route: string = ''
     constructor(app: FastifyInstance, route: string) {
         this._app = app
-        this._route = route
+        this._route = '/api' + route
     }
 
-    get<Reply>(cb: IHandler<void, Reply>) {
+    protected getOne<Reply>(cb: IHandler<void, Reply>) {
+        // @ts-ignore
+        this._app.get(this._route + '/:id', cb)
+    }
+
+    protected getMany<Reply>(cb: IHandler<void, Reply>) {
         // @ts-ignore
         this._app.get(this._route, cb)
     }
 
-    put<Request, Reply>(cb: IHandler<Request, Reply>) {
+    async put<Request, Reply>(cb: IHandler<Request, Reply>) {
         // @ts-ignore
-        this._app.put(this._route, cb)
+        this._app.put(this._route + '/:id', cb)
     }
 
-    post<Request, Reply>(cb: IHandler<Request, Reply>) {
+    async post<Request, Reply>(cb: IHandler<Request, Reply>) {
         // @ts-ignore
         this._app.post(this._route, cb)
     }
 
-    delete<Reply>(cb: IHandler<void, Reply>) {
+    async delete<Reply>(cb: IHandler<void, Reply>) {
         // @ts-ignore
-        this._app.delete(this._route, cb)
+        this._app.delete(this._route + '/:id', cb)
     }
 }
