@@ -1,5 +1,4 @@
 import util from 'util'
-
 import { exec as syncExec } from 'child_process'
 const exec = util.promisify(syncExec)
 

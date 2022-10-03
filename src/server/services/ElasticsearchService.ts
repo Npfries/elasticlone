@@ -1,6 +1,4 @@
 import { Client } from '@elastic/elasticsearch'
-import { Host } from '@prisma/client'
-import { ElasticdumpService } from './ElasticdumpService'
 import { HostService } from './HostService'
 
 export class ElasticsearchService {
@@ -27,7 +25,25 @@ export class ElasticsearchService {
 
     public async getInfo(id: number) {
         const client = await this._getClient(id)
-        const info = await client.info()
+        const data = (await client.info()) as any
+        const info = data.body
+        if (typeof info === 'string') return
+
+        info.type =
+            info.tagline === 'You Know, for Search'
+                ? 'Elasticsearch'
+                : 'OpenSearch'
         return info
+    }
+
+    public async catIndices(id: number) {
+        const client = await this._getClient(id)
+        const data = await client.cat.indices()
+        const result = data.body
+            .split('\n')
+            .map((row: string) => row.split('open ')[1])
+            .filter((row: string) => row !== undefined)
+            .map((row: string) => row.split(' ')[0])
+        return result
     }
 }

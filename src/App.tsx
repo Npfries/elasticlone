@@ -7,6 +7,7 @@ import React from 'react'
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import LazyLoad from './client/components/LazyLoad'
+import Compare from './client/pages/Compare'
 import Dashboard from './client/pages/Dashboard'
 import Pipelines from './client/pages/Pipelines'
 // import Editor from './client/components/Editor';
@@ -62,6 +63,14 @@ export default function App() {
                                     </LazyLoad>
                                 }
                             />
+                            <Route
+                                path="/compare"
+                                element={
+                                    <LazyLoad>
+                                        <Compare></Compare>
+                                    </LazyLoad>
+                                }
+                            ></Route>
                             <Route
                                 path="/404"
                                 element={

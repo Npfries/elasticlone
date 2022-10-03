@@ -1,5 +1,10 @@
 import { Navbar, NavLink } from '@mantine/core'
-import { IconChartDots3, IconGps } from '@tabler/icons'
+import {
+    IconArrowsCross,
+    IconGps,
+    IconPlayerTrackNext,
+    IconZoomCode,
+} from '@tabler/icons'
 import { Link } from 'react-router-dom'
 
 export default function AppNavbar() {
@@ -9,7 +14,7 @@ export default function AppNavbar() {
                 <Link to="/">
                     <NavLink
                         label="Elasticlone"
-                        icon={<IconChartDots3 size={36} stroke={2} />}
+                        icon={<IconZoomCode size={36} stroke={2} />}
                     />
                 </Link>
                 <Link to="/">
@@ -25,7 +30,27 @@ export default function AppNavbar() {
                 <Link to="/pipelines">
                     <NavLink
                         label="Pipelines"
-                        icon={<IconGps size={24} stroke={1.5}></IconGps>}
+                        icon={
+                            <IconPlayerTrackNext
+                                size={24}
+                                stroke={1.5}
+                            ></IconPlayerTrackNext>
+                        }
+                        onClick={() => {
+                            // handle new host
+                        }}
+                        variant="subtle"
+                    />
+                </Link>
+                <Link to="/compare">
+                    <NavLink
+                        label="Compare"
+                        icon={
+                            <IconArrowsCross
+                                size={24}
+                                stroke={1.5}
+                            ></IconArrowsCross>
+                        }
                         onClick={() => {
                             // handle new host
                         }}

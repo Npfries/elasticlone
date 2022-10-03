@@ -11,7 +11,19 @@ datasource db {
 }
 
 model Host {
-  id    Int     @id @unique @default(autoincrement())
-  url   String  @unique
-  name  String?
+  id              Int        @id @unique @default(autoincrement())
+  url             String     @unique
+  name            String?
+  inputPipelines  Pipeline[] @relation(name: "inputHost")
+  outputPipelines Pipeline[] @relation(name: "outputHost")
+}
+
+model Pipeline {
+  id           Int  @id @unique @default(autoincrement())
+  inputHostId  Int
+  inputHost    Host @relation(name: "inputHost", fields: [inputHostId], references: [id])
+  outputHostId Int
+  outputHost   Host @relation(name: "outputHost", fields: [outputHostId], references: [id])
+  inputIndex   String @default("")
+  outputIndex  String @default("")
 }

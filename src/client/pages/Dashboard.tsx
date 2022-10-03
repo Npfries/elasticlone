@@ -1,16 +1,8 @@
-import { Host } from '@prisma/client'
+import type { Host } from '@prisma/client'
 import { useEffect, useState } from 'react'
 import axios from 'axios'
-import {
-    ActionIcon,
-    Button,
-    Center,
-    Group,
-    Loader,
-    Paper,
-    TextInput,
-} from '@mantine/core'
-import { IconRefresh, IconTrash } from '@tabler/icons'
+import { Button, Center, Group, Loader, TextInput } from '@mantine/core'
+import DashboardHost from '../components/DashboardHost'
 
 interface NewHost {
     name?: string
@@ -35,17 +27,6 @@ export default function Dashboard() {
             url: newHost.url,
         })
         if (status === 200) updateHosts([...hosts, data])
-        console.log(data)
-    }
-
-    const handleDeleteHost = async (id: number) => {
-        const { data, status } = await axios.delete(`/api/host/${id}`)
-        updateHosts(hosts.filter((host) => host.id !== data.id))
-    }
-
-    const handleSyncHost = async (id: number) => {
-        const { data, status } = await axios.get(`/api/info/${id}`)
-        console.log(data)
     }
 
     return (
@@ -89,32 +70,7 @@ export default function Dashboard() {
                 <></>
             )}
             {hosts.map((host, i) => (
-                <Paper p="sm" m="sm" key={i}>
-                    <Group position="apart">
-                        <div>
-                            <Group>
-                                <ActionIcon
-                                    color="blue"
-                                    onClick={() => handleSyncHost(host.id)}
-                                >
-                                    <IconRefresh></IconRefresh>
-                                </ActionIcon>
-                                {host.name}
-                            </Group>
-                        </div>
-                        <div>
-                            <Group>
-                                {host.url}
-                                <ActionIcon
-                                    color="red"
-                                    onClick={() => handleDeleteHost(host.id)}
-                                >
-                                    <IconTrash></IconTrash>
-                                </ActionIcon>
-                            </Group>
-                        </div>
-                    </Group>
-                </Paper>
+                <DashboardHost host={host} key={i}></DashboardHost>
             ))}
         </>
     )
