@@ -1,10 +1,10 @@
 import { Pipeline } from '@prisma/client'
-import { FastifyInstance } from 'fastify'
 import { Controller } from '../lib/controller'
 import { PipelineService } from '../services/PipelineService'
+import type express from 'express'
 
 export class PipelineController extends Controller {
-    constructor(app: FastifyInstance, pipelineService: PipelineService) {
+    constructor(app: express.Application, pipelineService: PipelineService) {
         super(app, '/pipeline')
 
         super.getMany<Pipeline[]>(async (_, res) => {

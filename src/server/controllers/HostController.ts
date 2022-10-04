@@ -1,14 +1,14 @@
 import { Host } from '@prisma/client'
-import { FastifyInstance } from 'fastify'
 import { Controller } from '../lib/controller'
 import { HostService } from '../services/HostService'
+import type express from 'express'
 
 interface NewHost extends Host {
     id: never
 }
 
 export class HostController extends Controller {
-    constructor(app: FastifyInstance, hostsService: HostService) {
+    constructor(app: express.Application, hostsService: HostService) {
         super(app, '/host')
 
         super.getMany<Host[]>(async (_, res) => {

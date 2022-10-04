@@ -1,14 +1,14 @@
-import { FastifyInstance } from 'fastify'
 import { Controller } from '../lib/controller'
 import { JobService } from '../services/JobService'
+import type express from 'express'
 
 export class JobController extends Controller {
-    constructor(app: FastifyInstance, jobService: JobService) {
+    constructor(app: express.Application, jobService: JobService) {
         super(app, '/job')
 
         super.post(async (req: any, res) => {
-            const body = req.body
             const result = await jobService.run(req.body)
+            res.send(result)
         })
     }
 }

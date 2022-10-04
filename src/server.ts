@@ -1,4 +1,3 @@
-import fastify from 'fastify'
 import { HostController } from './server/controllers/HostController'
 import { IndicesController } from './server/controllers/IndicesController'
 import { InfoController } from './server/controllers/InfoController'
@@ -10,11 +9,18 @@ import { ElasticsearchService } from './server/services/ElasticsearchService'
 import { HostService } from './server/services/HostService'
 import { JobService } from './server/services/JobService'
 import { PipelineService } from './server/services/PipelineService'
+import { SocketService } from './server/services/SocketService'
+import http from 'http'
+import express from 'express'
+import { Server } from 'socket.io'
 
 const PORT = 3000
 
 const start = async () => {
-    const app = fastify()
+    const app = express()
+    const server = http.createServer(app)
+    app.use(express.json())
+    app.use(express.urlencoded())
 
     const db = new DatabaseService()
     await db.initialize()
@@ -22,7 +28,8 @@ const start = async () => {
     const hostsService = new HostService(db)
     const elasticsearchService = new ElasticsearchService(hostsService)
     const pipelineService = new PipelineService(db)
-    const elasticdumpService = new ElasticdumpService()
+    const socketService = new SocketService(server)
+    const elasticdumpService = new ElasticdumpService(socketService)
     const jobService = new JobService(elasticdumpService, hostsService)
 
     new HostController(app, hostsService)
@@ -31,7 +38,7 @@ const start = async () => {
     new IndicesController(app, elasticsearchService)
     new JobController(app, jobService)
 
-    app.listen({ port: PORT })
+    server.listen({ port: PORT })
     console.log(`Server listening on port: ${PORT}`)
 }
 

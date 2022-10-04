@@ -1,12 +1,12 @@
-import { FastifyInstance } from 'fastify'
 import { Controller } from '../lib/controller'
 import { ElasticsearchService } from '../services/ElasticsearchService'
+import type express from 'express'
 
 interface GetIndicesResponse {}
 
 export class IndicesController extends Controller {
     constructor(
-        app: FastifyInstance,
+        app: express.Application,
         elasticsearchService: ElasticsearchService
     ) {
         super(app, '/indices')

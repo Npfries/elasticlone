@@ -1,9 +1,5 @@
-import {
-    FastifyInstance,
-    FastifyRequest,
-    FastifyReply,
-    RouteHandlerMethod,
-} from 'fastify'
+import { FastifyRequest, FastifyReply } from 'fastify'
+import type express from 'express'
 
 interface IRequest<T> extends FastifyRequest {
     body: T
@@ -20,9 +16,9 @@ type IHandler<Request, Reply> = (
 ) => void
 
 export abstract class Controller {
-    private _app: FastifyInstance
+    private _app: express.Application
     private _route: string = ''
-    constructor(app: FastifyInstance, route: string) {
+    constructor(app: express.Application, route: string) {
         this._app = app
         this._route = '/api' + route
     }

@@ -5,6 +5,7 @@ import {
     MultiSelect,
     Button,
     Loader,
+    Code,
 } from '@mantine/core'
 import { Host, Pipeline } from '@prisma/client'
 import { IconCheck, IconPlayerPlay, IconX } from '@tabler/icons'
@@ -13,9 +14,10 @@ import { useEffect, useState } from 'react'
 
 type ITypes = 'Analyzer' | 'Mapping' | 'Data'
 
-export default function DashboardPipeline(props: {
+export default function IndexPipeline(props: {
     pipeline: Pipeline
     hosts: Host[]
+    socket: any
 }) {
     const [inputHostId, setInputHostId] = useState(props.pipeline.inputHostId)
     const [inputIndices, setInputIndices] = useState<string[]>([])
@@ -29,6 +31,11 @@ export default function DashboardPipeline(props: {
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [failed, setFailed] = useState(false)
+    const [logs, setLogs] = useState('')
+
+    props.socket.on('job', (message: any) => {
+        setLogs(`${logs}${message}`)
+    })
 
     const getInputHostIndices = async (id: number) => {
         const { data } = await axios.get<string[]>(`/api/indices/${id}`)
@@ -58,6 +65,7 @@ export default function DashboardPipeline(props: {
         setLoading(true)
         setSuccess(false)
         setFailed(false)
+        setLogs(`Pipeline ${props.pipeline.id} started...\n`)
         try {
             const { data, status } = await axios.post('/api/job', {
                 inputHost: inputHostId,
@@ -161,6 +169,9 @@ export default function DashboardPipeline(props: {
                 {loading ? <Loader size="sm" /> : null}
                 {success ? <IconCheck /> : null}
                 {failed ? <IconX color="red"></IconX> : null}
+            </Group>
+            <Group mt="md" grow>
+                <Code block>{logs}</Code>
             </Group>
         </Paper>
     )
