@@ -16,6 +16,17 @@ export class HostController extends Controller {
             res.send(result)
         })
 
+        super.getOne<Host | null>(async (req: any, res) => {
+            const id = parseInt(req.params.id)
+            const result = await hostsService.getHost(id)
+            if (!result) {
+                res.status(404)
+                res.send(null)
+            } else {
+                res.send(result)
+            }
+        })
+
         super.post<NewHost, Host>(async (req, res) => {
             const result = await hostsService.addHost(req.body)
             res.send(result)

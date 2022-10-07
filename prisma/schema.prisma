@@ -16,6 +16,9 @@ model Host {
   name            String?
   inputPipelines  Pipeline[] @relation(name: "inputHost")
   outputPipelines Pipeline[] @relation(name: "outputHost")
+  migrations      Migration[]
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Pipeline {
@@ -26,4 +29,17 @@ model Pipeline {
   outputHost   Host @relation(name: "outputHost", fields: [outputHostId], references: [id])
   inputIndex   String @default("")
   outputIndex  String @default("")
+  createAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Migration {
+  id      Int  @id @unique @default(autoincrement())
+  name    String
+  hostId  Int
+  host    Host @relation(fields: [hostId], references: [id])
+  data    String
+  type    Int
+  createdAt  DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

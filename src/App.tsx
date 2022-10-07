@@ -3,12 +3,15 @@ import {
     ColorSchemeProvider,
     MantineProvider,
 } from '@mantine/core'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { io, Socket } from 'socket.io-client'
 import LazyLoad from './client/components/LazyLoad'
+import { SocketContext } from './client/lib/SocketContext'
 import Compare from './client/pages/Compare'
 import Dashboard from './client/pages/Dashboard'
+import HostPage from './client/pages/Host'
 import Pipelines from './client/pages/Pipelines'
 // import Editor from './client/components/Editor';
 // import Shell from './client/components/Shell';
@@ -26,63 +29,80 @@ export default function App() {
         // fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif'
     }
 
+    const [socket, setSocket] = useState<Socket | null>(null)
+
+    useEffect(() => {
+        const socket = io('http://localhost:3000')
+        setSocket(socket)
+    }, [])
+
     return (
-        <ColorSchemeProvider
-            colorScheme={colorScheme}
-            toggleColorScheme={toggleColorScheme}
-        >
-            <MantineProvider
-                theme={{ colorScheme, ...themeOverrides }}
-                withNormalizeCSS
-                withGlobalStyles
-                withCSSVariables
+        <SocketContext.Provider value={socket}>
+            <ColorSchemeProvider
+                colorScheme={colorScheme}
+                toggleColorScheme={toggleColorScheme}
             >
-                <BrowserRouter>
-                    <Routes>
-                        <Route
-                            path="/"
-                            element={
-                                <LazyLoad>
-                                    <Shell />
-                                </LazyLoad>
-                            }
-                        >
+                <MantineProvider
+                    theme={{ colorScheme, ...themeOverrides }}
+                    withNormalizeCSS
+                    withGlobalStyles
+                    withCSSVariables
+                >
+                    <BrowserRouter>
+                        <Routes>
                             <Route
                                 path="/"
                                 element={
                                     <LazyLoad>
-                                        <Dashboard></Dashboard>
+                                        <Shell />
                                     </LazyLoad>
                                 }
-                            />
-                            <Route
-                                path="/pipelines"
-                                element={
-                                    <LazyLoad>
-                                        <Pipelines></Pipelines>
-                                    </LazyLoad>
-                                }
-                            />
-                            <Route
-                                path="/compare"
-                                element={
-                                    <LazyLoad>
-                                        <Compare></Compare>
-                                    </LazyLoad>
-                                }
-                            ></Route>
-                            <Route
-                                path="/404"
-                                element={
-                                    <LazyLoad>
-                                        <NotFound />
-                                    </LazyLoad>
-                                }
-                            />
-                        </Route>
-                    </Routes>
-                </BrowserRouter>
-            </MantineProvider>
-        </ColorSchemeProvider>
+                            >
+                                <Route
+                                    path="/"
+                                    element={
+                                        <LazyLoad>
+                                            <Dashboard></Dashboard>
+                                        </LazyLoad>
+                                    }
+                                />
+                                <Route
+                                    path="/pipelines"
+                                    element={
+                                        <LazyLoad>
+                                            <Pipelines></Pipelines>
+                                        </LazyLoad>
+                                    }
+                                />
+                                <Route
+                                    path="/compare"
+                                    element={
+                                        <LazyLoad>
+                                            <Compare></Compare>
+                                        </LazyLoad>
+                                    }
+                                ></Route>
+                                <Route
+                                    path="/host/:slug"
+                                    element={
+                                        <LazyLoad>
+                                            <HostPage />
+                                        </LazyLoad>
+                                    }
+                                />
+                                <Route
+                                    path="/404"
+                                    element={
+                                        <LazyLoad>
+                                            <NotFound />
+                                        </LazyLoad>
+                                    }
+                                />
+                            </Route>
+                        </Routes>
+                    </BrowserRouter>
+                </MantineProvider>
+            </ColorSchemeProvider>
+        </SocketContext.Provider>
     )
 }

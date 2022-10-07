@@ -3,6 +3,7 @@ import { Host } from '@prisma/client'
 import { IconRefresh, IconTrash } from '@tabler/icons'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 
 interface Info {
     type: string
@@ -32,7 +33,7 @@ export default function DashboardHost(params: { host: Host }) {
     }
 
     return (
-        <Paper p="sm" m="sm">
+        <Paper p="sm" mt="sm">
             <Group position="apart">
                 <div>
                     <Group>
@@ -42,7 +43,9 @@ export default function DashboardHost(params: { host: Host }) {
                         >
                             <IconRefresh></IconRefresh>
                         </ActionIcon>
-                        <b>{params.host.name}</b>
+                        <Link to={`/host/${params.host.id}`}>
+                            <b>{params.host.name}</b>
+                        </Link>
                     </Group>
                 </div>
                 <div>

@@ -12,7 +12,10 @@ import { PipelineService } from './server/services/PipelineService'
 import { SocketService } from './server/services/SocketService'
 import http from 'http'
 import express from 'express'
-import { Server } from 'socket.io'
+import { MigrationController } from './server/controllers/MigrationController'
+import { MigrationService } from './server/services/MigrationService'
+import { UpController } from './server/controllers/UpController'
+import { DownController } from './server/controllers/DownController'
 
 const PORT = 3000
 
@@ -31,12 +34,16 @@ const start = async () => {
     const socketService = new SocketService(server)
     const elasticdumpService = new ElasticdumpService(socketService)
     const jobService = new JobService(elasticdumpService, hostsService)
+    const migrationService = new MigrationService(db, elasticsearchService, elasticdumpService, hostsService)
 
     new HostController(app, hostsService)
     new InfoController(app, elasticsearchService)
     new PipelineController(app, pipelineService)
     new IndicesController(app, elasticsearchService)
     new JobController(app, jobService)
+    new MigrationController(app, migrationService)
+    new UpController(app, migrationService)
+    new DownController(app, migrationService)
 
     server.listen({ port: PORT })
     console.log(`Server listening on port: ${PORT}`)

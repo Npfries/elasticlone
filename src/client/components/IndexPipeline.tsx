@@ -1,41 +1,26 @@
-import {
-    Paper,
-    Group,
-    Select,
-    MultiSelect,
-    Button,
-    Loader,
-    Code,
-} from '@mantine/core'
+import { Paper, Group, Select, MultiSelect, Button, Loader, Code } from '@mantine/core'
 import { Host, Pipeline } from '@prisma/client'
 import { IconCheck, IconPlayerPlay, IconX } from '@tabler/icons'
 import axios from 'axios'
+import { Flags } from 'hasflags'
 import { useEffect, useState } from 'react'
+import { PipelineTypes } from '../../lib/enums'
+import ServerLogs from './ServerLogs'
 
-type ITypes = 'Analyzer' | 'Mapping' | 'Data'
+type ITypes = 'ANALYZER' | 'MAPPING' | 'DATA' | 'SETTINGS'
 
-export default function IndexPipeline(props: {
-    pipeline: Pipeline
-    hosts: Host[]
-    socket: any
-}) {
+export default function IndexPipeline(props: { pipeline: Pipeline; hosts: Host[]; socket: any }) {
     const [inputHostId, setInputHostId] = useState(props.pipeline.inputHostId)
     const [inputIndices, setInputIndices] = useState<string[]>([])
     const [inputIndex, setInputIndex] = useState<string>()
-    const [outputHostId, setOutputHostId] = useState(
-        props.pipeline.outputHostId
-    )
+    const [outputHostId, setOutputHostId] = useState(props.pipeline.outputHostId)
     const [outputIndex, setOutputIndex] = useState<string>()
     const [outputIndices, setOutputIndices] = useState<string[]>([])
-    const [types, setTypes] = useState<ITypes[]>(['Data'])
+    const [types, setTypes] = useState<ITypes[]>(['DATA'])
     const [loading, setLoading] = useState(false)
     const [success, setSuccess] = useState(false)
     const [failed, setFailed] = useState(false)
-    const [logs, setLogs] = useState('')
-
-    props.socket.on('job', (message: any) => {
-        setLogs(`${logs}${message}`)
-    })
+    const typesEnum = new Flags(PipelineTypes)
 
     const getInputHostIndices = async (id: number) => {
         const { data } = await axios.get<string[]>(`/api/indices/${id}`)
@@ -65,7 +50,6 @@ export default function IndexPipeline(props: {
         setLoading(true)
         setSuccess(false)
         setFailed(false)
-        setLogs(`Pipeline ${props.pipeline.id} started...\n`)
         try {
             const { data, status } = await axios.post('/api/job', {
                 inputHost: inputHostId,
@@ -83,19 +67,20 @@ export default function IndexPipeline(props: {
         setLoading(false)
     }
 
+    const handleTypesChange = (value: string[]) => {
+        typesEnum.RemoveAllFlags()
+        value.forEach((t) => {
+            // typesEnum.addFlag(PipelineTypes[t])
+        })
+    }
+
     useEffect(() => {
         getInputHostIndices(inputHostId)
         getOutputHostIndices(outputHostId)
     }, [])
 
     const validatePipeline = (): boolean => {
-        return inputHostId &&
-            inputIndex &&
-            outputHostId &&
-            outputIndex &&
-            types?.length
-            ? true
-            : false
+        return inputHostId && inputIndex && outputHostId && outputIndex && types?.length ? true : false
     }
 
     return (
@@ -148,10 +133,10 @@ export default function IndexPipeline(props: {
                 ></Select>
                 <MultiSelect
                     label="Types"
-                    data={['Analyzer', 'Mapping', 'Data']}
+                    data={Object.keys(PipelineTypes).filter((key) => !parseInt(key) && key !== '0')}
                     value={types}
                     onChange={(value) => {
-                        setTypes(value as unknown as any)
+                        handleTypesChange(value)
                     }}
                 ></MultiSelect>
             </Group>
@@ -170,9 +155,7 @@ export default function IndexPipeline(props: {
                 {success ? <IconCheck /> : null}
                 {failed ? <IconX color="red"></IconX> : null}
             </Group>
-            <Group mt="md" grow>
-                <Code block>{logs}</Code>
-            </Group>
+            <ServerLogs jobId="job"></ServerLogs>
         </Paper>
     )
 }

@@ -7,8 +7,13 @@ export class JobController extends Controller {
         super(app, '/job')
 
         super.post(async (req: any, res) => {
-            const result = await jobService.run(req.body)
-            res.send(result)
+            try {
+                const result = await jobService.run(req.body)
+                res.send(result)
+            } catch (e) {
+                res.status(500)
+                res.send(e)
+            }
         })
     }
 }

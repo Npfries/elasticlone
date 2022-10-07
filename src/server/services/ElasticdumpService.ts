@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import { SocketService } from './SocketService'
 
-type ITypes = 'analyzer' | 'mapping' | 'data'
+type ITypes = 'analyzer' | 'mapping' | 'data' | 'settings'
 
 export class ElasticdumpService {
     private _socketService
@@ -10,26 +10,19 @@ export class ElasticdumpService {
         this._socketService = socketService
     }
 
-    public async run(from: string, to: string, type: ITypes) {
+    public async run(from: string, to: string, type: ITypes, callback?: Function) {
         return new Promise((resolve, reject) => {
-            const child = spawn(
-                'npx',
-                [
-                    `elasticdump`,
-                    `--input=${from}`,
-                    `--output=${to}`,
-                    `--type=${type}`,
-                ],
-                { shell: true }
-            )
+            console.log('shell', from, to, type)
+            const child = spawn('npx', [`elasticdump`, `--input=${from}`, `--output=${to}`, `--type=${type}`], { shell: true })
             child.on('error', (e) => {
-                reject(e)
+                console.error(e)
             })
             child.on('exit', (code) => {
                 if (code === 0) {
                     resolve('job') /// id?
                 } else {
-                    reject(code)
+                    console.error('Error code: ', code)
+                    reject('Exited code: ' + code)
                 }
             })
 

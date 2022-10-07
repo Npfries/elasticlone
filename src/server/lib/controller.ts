@@ -10,10 +10,7 @@ interface IReply<T> extends FastifyReply {
     send(data: T): void
 }
 
-type IHandler<Request, Reply> = (
-    request: IRequest<Request>,
-    reply: IReply<Reply>
-) => void
+type IHandler<Request, Reply> = (request: IRequest<Request>, reply: IReply<Reply>) => void
 
 export abstract class Controller {
     private _app: express.Application
@@ -46,5 +43,15 @@ export abstract class Controller {
     async delete<Reply>(cb: IHandler<void, Reply>) {
         // @ts-ignore
         this._app.delete(this._route + '/:id', cb)
+    }
+
+    async deleteWithSubId<Reply>(cb: IHandler<void, Reply>) {
+        // @ts-ignore
+        this._app.delete(this._route + '/:id/:subId', cb)
+    }
+
+    async postWithId<Request, Reply>(cb: IHandler<Request, Reply>) {
+        // @ts-ignore
+        this._app.post(this._route + '/:id', cb)
     }
 }

@@ -12,10 +12,7 @@ interface IRunParams {
 export class JobService {
     private _elasticdumpService: ElasticdumpService
     private _hostService: HostService
-    constructor(
-        elasticdumpService: ElasticdumpService,
-        hostService: HostService
-    ) {
+    constructor(elasticdumpService: ElasticdumpService, hostService: HostService) {
         this._elasticdumpService = elasticdumpService
         this._hostService = hostService
     }
