@@ -38,7 +38,16 @@ export class MigrationService {
         const migrations = await this._getExecutableMigrations(id)
         const umzug = new Umzug({
             migrations: migrations,
-            storage: new CustomUmzugStorage(this._elasticsearchService, id), // finish setup storage, pass in client
+            storage: new CustomUmzugStorage(
+                this._elasticsearchService,
+                id,
+                (name: string) => {
+                    this._socketService.sendToAll(SocketEvents.MIGRATION_LOGGED, name)
+                },
+                (name: string) => {
+                    this._socketService.sendToAll(SocketEvents.MIGRATION_UNLOGGED, name)
+                }
+            ), // finish setup storage, pass in client
             logger: console,
         })
         return umzug
@@ -104,7 +113,15 @@ export class MigrationService {
     }
 
     public async getMigrations(hostId: number) {
-        return await this._getMigrationsFromDb(hostId)
+        const migrations = await this._getMigrationsFromDb(hostId)
+        const executed = await this.executed(hostId)
+        const result = migrations.map((migration) => {
+            return {
+                ...migration,
+                executed: executed.some((ex) => ex.name === migration.name),
+            }
+        })
+        return result
     }
 
     public async addMigration(hostId: number, name: string, type: MigrationTypes, data: any) {
@@ -130,11 +147,22 @@ export class MigrationService {
 
     public async down(id: number) {
         const umzug = await this._getUmzug(id)
-        const pending = await umzug.pending()
         await umzug.down({
             to: 0,
         })
         this._socketService.sendToAll(SocketEvents.MIGRATIONS_COMPLETED)
         return
+    }
+
+    public async pending(hostId: number) {
+        const umzug = await this._getUmzug(hostId)
+        const pending = await umzug.pending()
+        return pending
+    }
+
+    public async executed(hostId: number) {
+        const umzug = await this._getUmzug(hostId)
+        const executed = await umzug.executed()
+        return executed
     }
 }

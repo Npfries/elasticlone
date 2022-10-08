@@ -11,6 +11,8 @@ export enum MigrationTypes {
 export enum SocketEvents {
     MIGRATIONS_COMPLETED = 'MIGRATIONS_COMPLETED',
     MIGRATION_CREATED = 'MIGRATION_CREATED',
+    MIGRATION_LOGGED = 'MIGRATION_LOGGED',
+    MIGRATION_UNLOGGED = 'MIGRATION_UNLOGGED',
 }
 
 export enum MigrationStepDefinitions {

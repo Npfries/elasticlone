@@ -14,6 +14,7 @@ interface IMigrationsTableProps {
 
 export default function MigrationsTable(props: IMigrationsTableProps) {
     const [migrations, setMigrations] = useState<any[]>([])
+    const [executedCount, setExecutedCount] = useState(0)
     const socket = useContext(SocketContext)
 
     const loadMigrations = async () => {
@@ -22,6 +23,10 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
             setMigrations(data)
         }
     }
+
+    useEffect(() => {
+        setExecutedCount(migrations.reduce((acc, val) => (val.executed ? acc + 1 : acc), 0))
+    }, [migrations])
 
     useEffect(() => {
         if (props.host?.id) loadMigrations()
@@ -33,6 +38,14 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
 
     socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
         loadMigrations()
+    })
+
+    socket?.on(SocketEvents.MIGRATION_LOGGED, () => {
+        setExecutedCount(executedCount + 1)
+    })
+
+    socket?.on(SocketEvents.MIGRATION_UNLOGGED, () => {
+        setExecutedCount(executedCount - 1)
     })
 
     const migrationStepList = (type: MigrationTypes) => {
@@ -51,10 +64,10 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
         <Timeline.Item
             key={i}
             title={
-                <Accordion mt="sm">
+                <Accordion>
                     <Accordion.Item value="steps">
                         <Accordion.Control style={{ height: '24px', position: 'relative', bottom: '3px' }}>
-                            {migration.name} (5)
+                            {migration.name} ({migrationStepList(migration.type).length} steps)
                         </Accordion.Control>
                         <Accordion.Panel>
                             <List
@@ -112,7 +125,7 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
                             <IconPlayerSkipForward size={18} />
                         </ActionIcon>
                     </Group>
-                    <Timeline mt="lg" active={0} bulletSize={24} lineWidth={2}>
+                    <Timeline mt="lg" active={executedCount ? executedCount - 1 : undefined} bulletSize={24} lineWidth={4}>
                         {rows}
                     </Timeline>
                 </Tabs.Panel>
