@@ -1,11 +1,12 @@
 import { Paper, Table, ActionIcon, Tabs, Menu, Modal, LoadingOverlay } from '@mantine/core'
 import { Host } from '@prisma/client'
-import { IconCopy, IconList, IconMessageCircle, IconSettings, IconTextCaption, IconTrash } from '@tabler/icons'
+import { IconCopy, IconList, IconMessageCircle, IconPlaylistAdd, IconSettings, IconTextCaption, IconTrash } from '@tabler/icons'
 import axios from 'axios'
 import { useContext, useEffect, useState } from 'react'
 import { SocketEvents } from '../../lib/enums'
 import { SocketContext } from '../lib/SocketContext'
 import IndexCopyModal from './Indices/IndexCopyModal'
+import IndexCreateModal from './Indices/IndexCreateModal'
 import IndexRenameModal from './Indices/IndexRenameModal'
 
 interface IIndexTableProps {
@@ -33,7 +34,7 @@ export default function IndexTable(props: IIndexTableProps) {
 
     useEffect(() => {
         loadIndices()
-    }, [props.host])
+    }, [])
 
     socket?.on(SocketEvents.MIGRATIONS_STARTED, () => {
         setInProgress(true)
@@ -75,6 +76,20 @@ export default function IndexTable(props: IIndexTableProps) {
                     setModalOpen(false)
                 }}
             ></IndexCopyModal>
+        )
+        setModalOpen(true)
+    }
+
+    const handleCreateIndexClicked = async () => {
+        setModalTitle('Create Index')
+        setModalContent(
+            <IndexCreateModal
+                host={props.host as Host}
+                existingIndices={indices}
+                onSubmit={() => {
+                    setModalOpen(false)
+                }}
+            ></IndexCreateModal>
         )
         setModalOpen(true)
     }
@@ -130,7 +145,7 @@ export default function IndexTable(props: IIndexTableProps) {
     })
 
     return (
-        <Paper p="sm">
+        <Paper p="sm" style={{ overflowY: 'auto', height: '100%' }}>
             <Tabs defaultValue="indices">
                 <Tabs.List>
                     <Tabs.Tab value="indices" icon={<IconList size={14} />}>
@@ -153,7 +168,11 @@ export default function IndexTable(props: IIndexTableProps) {
                         <thead>
                             <tr>
                                 <th>Index Name</th>
-                                <th></th>
+                                <th style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <ActionIcon>
+                                        <IconPlaylistAdd onClick={() => handleCreateIndexClicked()}></IconPlaylistAdd>
+                                    </ActionIcon>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>{indicesRows}</tbody>

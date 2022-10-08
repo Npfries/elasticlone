@@ -46,6 +46,10 @@ export const MigrationSteps = {
         ],
         DOWN: [MigrationStepDefinitions.DELETE_INDEX_DESTINATION],
     },
+    [MigrationTypes.CREATE_INDEX]: {
+        UP: [MigrationStepDefinitions.CREATE_INDEX_DESTINATION],
+        DOWN: [MigrationStepDefinitions.DELETE_INDEX_DESTINATION],
+    },
 }
 
 interface IContext {
@@ -60,7 +64,7 @@ export const MigraitonActions = {
         return
     },
     [MigrationStepDefinitions.CREATE_INDEX_DESTINATION]: async (context: IContext) => {
-        return
+        return await context.elasticsearchService.createIndex(context.host.id, context.migration.data.destination)
     },
 
     [MigrationStepDefinitions.DELETE_INDEX_SOURCE]: async (context: IContext) => {

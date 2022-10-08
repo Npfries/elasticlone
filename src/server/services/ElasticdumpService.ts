@@ -12,7 +12,6 @@ export class ElasticdumpService {
 
     public async run(from: string, to: string, type: ITypes, callback?: Function) {
         return new Promise((resolve, reject) => {
-            console.log('shell', from, to, type)
             const child = spawn('npx', [`elasticdump`, `--input=${from}`, `--output=${to}`, `--type=${type}`], { shell: true })
             child.on('error', (e) => {
                 console.error(e)

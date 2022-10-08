@@ -18,6 +18,8 @@ export class IndicesController extends Controller {
             const id = parseInt(req.params.id)
             const index = req.params.subId
             await elasticsearchService.deleteIndex(id, index)
+            // TODO: this should create a migration instead
+            // that requires being able to recreate arbitrary indices for the down migration
             res.send(index)
         })
     }

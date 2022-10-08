@@ -4,14 +4,13 @@ import axios from 'axios'
 import { useEffect, useState } from 'react'
 import { MigrationTypes } from '../../../lib/enums'
 
-interface IIndexRenameModal {
-    index: string
+interface IIndexCreateModal {
     host: Host
     existingIndices: string[]
     onSubmit: Function
 }
 
-export default function IndexCopyModal(props: IIndexRenameModal) {
+export default function IndexCreateModal(props: IIndexCreateModal) {
     const [name, setName] = useState('')
     const [indices, setIndices] = useState(props.existingIndices)
     const [error, setError] = useState('')
@@ -27,10 +26,9 @@ export default function IndexCopyModal(props: IIndexRenameModal) {
     const handleSumbitClicked = async () => {
         const migration = {
             hostId: props.host?.id,
-            name: `copy_${props.index}_to_${name}`,
-            type: MigrationTypes.COPY_INDEX,
+            name: `create_index_${name}`,
+            type: MigrationTypes.CREATE_INDEX,
             data: {
-                source: props.index,
                 destination: name,
             },
         }
@@ -58,7 +56,7 @@ export default function IndexCopyModal(props: IIndexRenameModal) {
             ></Select>
             {name && !error ? (
                 <Text mt="sm" mb="sm">
-                    This will create a migration for copying <b>{props.index}</b> to <b>{name}</b>
+                    This will create a migration for creating <b>{name}</b>
                 </Text>
             ) : (
                 <Space h="md"></Space>

@@ -46,12 +46,12 @@ export default function HostPage(props: IHostPageProps) {
                     {info?.version !== undefined ? <Badge color="teal">Connected</Badge> : <Badge color="red">Disconnected</Badge>}
                 </Group>
             </Paper>
-            <SimpleGrid mt="sm" cols={2}>
-                <div>
+            {host && (
+                <SimpleGrid mt="sm" cols={2} style={{ height: 'calc(100% - 100px)' }}>
                     <IndexTable host={host}></IndexTable>
-                </div>
-                <MigrationsTable host={host}></MigrationsTable>
-            </SimpleGrid>
+                    <MigrationsTable host={host}></MigrationsTable>
+                </SimpleGrid>
+            )}
         </>
     )
 }

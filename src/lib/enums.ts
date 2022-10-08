@@ -10,6 +10,7 @@ export enum PipelineTypes {
 export enum MigrationTypes {
     RENAME_INDEX,
     COPY_INDEX,
+    CREATE_INDEX,
 }
 
 export enum MigrationValues {

@@ -31,7 +31,7 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
 
     useEffect(() => {
         if (props.host?.id) loadMigrations()
-    }, [props.host])
+    }, [])
 
     socket?.on(SocketEvents.MIGRATION_CREATED, () => {
         loadMigrations()
@@ -121,7 +121,7 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
     ))
 
     return (
-        <Paper p="sm">
+        <Paper p="sm" style={{ overflowY: 'auto', height: '100%' }}>
             <Tabs defaultValue="migrations" mb="sm">
                 <Tabs.List>
                     <Tabs.Tab value="migrations" icon={<IconList size={14} />}>

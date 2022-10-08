@@ -1,4 +1,4 @@
-import { Button, Group, Select, Text } from '@mantine/core'
+import { Button, Group, Select, Space, Text } from '@mantine/core'
 import { Host } from '@prisma/client'
 import axios from 'axios'
 import { useEffect, useState } from 'react'
@@ -56,9 +56,13 @@ export default function IndexRenameModal(props: IIndexRenameModal) {
                 }}
                 error={error}
             ></Select>
-            <Text mt="sm" mb="sm">
-                This will create a migration for renaming <b>{props.currentName}</b> to <b>{name}</b>
-            </Text>
+            {name && !error ? (
+                <Text mt="sm" mb="sm">
+                    This will create a migration for renaming <b>{props.currentName}</b> to <b>{name}</b>
+                </Text>
+            ) : (
+                <Space h="md"></Space>
+            )}
             {() => {
                 if (name !== '' && error !== '') {
                     return
