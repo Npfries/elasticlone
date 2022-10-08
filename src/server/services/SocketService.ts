@@ -18,7 +18,7 @@ export class SocketService {
         })
     }
 
-    public sendToAll<T>(id: string, message: T) {
+    public sendToAll<T>(id: string, message?: T) {
         // should specifically only send to clients who care about this
         this._sockets.forEach((socket) => socket.emit(id, message))
     }

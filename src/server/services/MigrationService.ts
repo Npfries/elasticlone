@@ -1,29 +1,33 @@
 import { Host, Migration } from '@prisma/client'
 import { Umzug } from 'umzug'
 import { MigraitonActions, MigrationSteps } from '../../lib/constants'
-import { MigrationTypes } from '../../lib/enums'
+import { MigrationTypes, SocketEvents } from '../../lib/enums'
 import { CustomUmzugStorage } from '../lib/CustomUmzugStorage'
 import { DatabaseService } from './DatabaseService'
 import { ElasticdumpService } from './ElasticdumpService'
 import { ElasticsearchService } from './ElasticsearchService'
 import { HostService } from './HostService'
+import { SocketService } from './SocketService'
 
 export class MigrationService {
     private _databaseService: DatabaseService
     private _elasticsearchService: ElasticsearchService
     private _elasticdumpService: ElasticdumpService
     private _hostService: HostService
+    private _socketService
 
     constructor(
         databaseService: DatabaseService,
         elasticsearchService: ElasticsearchService,
         elasticdumpService: ElasticdumpService,
-        hostService: HostService
+        hostService: HostService,
+        socketService: SocketService
     ) {
         this._databaseService = databaseService
         this._elasticsearchService = elasticsearchService
         this._elasticdumpService = elasticdumpService
         this._hostService = hostService
+        this._socketService = socketService
     }
 
     private async _getUmzug(id: number) {
@@ -113,19 +117,24 @@ export class MigrationService {
                 type,
             },
         })
+        this._socketService.sendToAll(SocketEvents.MIGRATION_CREATED)
         return result
     }
 
     public async up(id: number) {
         const umzug = await this._getUmzug(id)
-        return await umzug.up()
+        await umzug.up()
+        this._socketService.sendToAll(SocketEvents.MIGRATIONS_COMPLETED)
+        return
     }
 
     public async down(id: number) {
         const umzug = await this._getUmzug(id)
         const pending = await umzug.pending()
-        return await umzug.down({
+        await umzug.down({
             to: 0,
         })
+        this._socketService.sendToAll(SocketEvents.MIGRATIONS_COMPLETED)
+        return
     }
 }

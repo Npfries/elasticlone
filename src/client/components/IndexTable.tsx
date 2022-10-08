@@ -1,9 +1,11 @@
-import { Paper, Table, ActionIcon, Tabs, Menu } from '@mantine/core'
+import { Paper, Table, ActionIcon, Tabs, Menu, Modal } from '@mantine/core'
 import { Host } from '@prisma/client'
 import { IconCopy, IconList, IconMessageCircle, IconSettings, IconTextCaption, IconTrash } from '@tabler/icons'
 import axios from 'axios'
-import { useEffect, useState } from 'react'
-import { MigrationTypes } from '../../lib/enums'
+import { useContext, useEffect, useState } from 'react'
+import { SocketEvents } from '../../lib/enums'
+import { SocketContext } from '../lib/SocketContext'
+import IndexRenameModal from './Indices/IndexRenameModal'
 
 interface IIndexTableProps {
     host?: Host
@@ -16,6 +18,10 @@ interface ITabs {
 
 export default function IndexTable(props: IIndexTableProps) {
     const [indices, setIndices] = useState<string[]>([])
+    const socket = useContext(SocketContext)
+    const [modalContent, setModalContent] = useState<JSX.Element>(<></>)
+    const [modalOpen, setModalOpen] = useState(false)
+    const [modalTitle, setModalTitle] = useState('')
 
     const loadIndices = async () => {
         if (!props?.host?.id) return
@@ -27,23 +33,40 @@ export default function IndexTable(props: IIndexTableProps) {
         loadIndices()
     }, [props.host])
 
+    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
+        loadIndices()
+    })
+
     const handleDeleteIndexClicked = async (index: string) => {
         await axios.delete(`/api/indices/${props.host?.id}/${index}`)
         loadIndices()
     }
 
     const handleRenameIndexClicked = async (index: string) => {
-        const newName = `${index}_copy`
-        const migration = {
-            hostId: props.host?.id,
-            name: `rename_${index}_to_${newName}`,
-            type: MigrationTypes.RENAME_INDEX,
-            data: {
-                source: index,
-                destination: newName,
-            },
-        }
-        await axios.post('/api/migration', migration)
+        setModalTitle('Rename Index')
+        setModalContent(
+            <IndexRenameModal
+                host={props.host as Host}
+                existingIndices={indices}
+                currentName={index}
+                onSubmit={() => {
+                    setModalOpen(false)
+                }}
+            ></IndexRenameModal>
+        )
+        setModalOpen(true)
+
+        // const newName = `${index}_copy`
+        // const migration = {
+        //     hostId: props.host?.id,
+        //     name: `rename_${index}_to_${newName}`,
+        //     type: MigrationTypes.RENAME_INDEX,
+        //     data: {
+        //         source: index,
+        //         destination: newName,
+        //     },
+        // }
+        // await axios.post('/api/migration', migration)
     }
 
     const indicesRows = indices.map((index, i) => {
@@ -92,7 +115,7 @@ export default function IndexTable(props: IIndexTableProps) {
     return (
         <Paper p="sm">
             <Tabs defaultValue="indices">
-                <Tabs.List style={{ overflowX: 'auto', flexWrap: 'nowrap' }}>
+                <Tabs.List>
                     <Tabs.Tab value="indices" icon={<IconList size={14} />}>
                         <b>Indices</b>
                     </Tabs.Tab>
@@ -128,6 +151,9 @@ export default function IndexTable(props: IIndexTableProps) {
                     Index Templates
                 </Tabs.Panel>
             </Tabs>
+            <Modal opened={modalOpen} onClose={() => setModalOpen(false)} title={modalTitle}>
+                {modalContent}
+            </Modal>
         </Paper>
     )
 }

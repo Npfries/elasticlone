@@ -16,6 +16,7 @@ import { MigrationController } from './server/controllers/MigrationController'
 import { MigrationService } from './server/services/MigrationService'
 import { UpController } from './server/controllers/UpController'
 import { DownController } from './server/controllers/DownController'
+import { IndicesExistsController } from './server/controllers/IndicesExistsController'
 
 const PORT = 3000
 
@@ -28,18 +29,19 @@ const start = async () => {
     const db = new DatabaseService()
     await db.initialize()
 
+    const socketService = new SocketService(server)
     const hostsService = new HostService(db)
     const elasticsearchService = new ElasticsearchService(hostsService)
     const pipelineService = new PipelineService(db)
-    const socketService = new SocketService(server)
     const elasticdumpService = new ElasticdumpService(socketService)
     const jobService = new JobService(elasticdumpService, hostsService)
-    const migrationService = new MigrationService(db, elasticsearchService, elasticdumpService, hostsService)
+    const migrationService = new MigrationService(db, elasticsearchService, elasticdumpService, hostsService, socketService)
 
     new HostController(app, hostsService)
     new InfoController(app, elasticsearchService)
     new PipelineController(app, pipelineService)
     new IndicesController(app, elasticsearchService)
+    new IndicesExistsController(app, elasticsearchService)
     new JobController(app, jobService)
     new MigrationController(app, migrationService)
     new UpController(app, migrationService)

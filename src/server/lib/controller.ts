@@ -25,6 +25,11 @@ export abstract class Controller {
         this._app.get(this._route + '/:id', cb)
     }
 
+    protected getOneWithSubId<Reply>(cb: IHandler<void, Reply>) {
+        // @ts-ignore
+        this._app.get(this._route + '/:id/:subId', cb)
+    }
+
     protected getMany<Reply>(cb: IHandler<void, Reply>) {
         // @ts-ignore
         this._app.get(this._route, cb)

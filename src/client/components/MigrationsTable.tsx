@@ -1,11 +1,11 @@
-import { Paper, Timeline, Text, Accordion, Tabs, List, ThemeIcon, Button, ActionIcon, Group } from '@mantine/core'
+import { Paper, Timeline, Text, Accordion, Tabs, List, ThemeIcon, ActionIcon, Group } from '@mantine/core'
 import { Host } from '@prisma/client'
-import { IconCircleCheck, IconCircleDashed, IconGitBranch, IconList, IconPlayerSkipBack, IconPlayerSkipForward } from '@tabler/icons'
+import { IconCircleCheck, IconList, IconPlayerSkipBack, IconPlayerSkipForward } from '@tabler/icons'
 import axios from 'axios'
-import { relative } from 'path'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { MigrationSteps } from '../../lib/constants'
-import { MigrationTypes } from '../../lib/enums'
+import { MigrationTypes, SocketEvents } from '../../lib/enums'
+import { SocketContext } from '../lib/SocketContext'
 import ServerLogs from './ServerLogs'
 
 interface IMigrationsTableProps {
@@ -14,6 +14,7 @@ interface IMigrationsTableProps {
 
 export default function MigrationsTable(props: IMigrationsTableProps) {
     const [migrations, setMigrations] = useState<any[]>([])
+    const socket = useContext(SocketContext)
 
     const loadMigrations = async () => {
         if (props.host?.id) {
@@ -25,6 +26,14 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
     useEffect(() => {
         if (props.host?.id) loadMigrations()
     }, [props.host])
+
+    socket?.on(SocketEvents.MIGRATION_CREATED, () => {
+        loadMigrations()
+    })
+
+    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
+        loadMigrations()
+    })
 
     const migrationStepList = (type: MigrationTypes) => {
         return MigrationSteps[type].UP.map((val, i) => <List.Item key={i}>{val}</List.Item>)

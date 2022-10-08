@@ -1,8 +1,4 @@
-import {
-    ColorScheme,
-    ColorSchemeProvider,
-    MantineProvider,
-} from '@mantine/core'
+import { ColorScheme, ColorSchemeProvider, MantineProvider } from '@mantine/core'
 import React, { useEffect } from 'react'
 import { useState } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
@@ -22,8 +18,7 @@ const NotFound = React.lazy(() => import('./client/pages/404'))
 
 export default function App() {
     const [colorScheme, setColorScheme] = useState<ColorScheme>('light')
-    const toggleColorScheme = (value?: ColorScheme) =>
-        setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'))
+    const toggleColorScheme = (value?: ColorScheme) => setColorScheme(value || (colorScheme === 'dark' ? 'light' : 'dark'))
 
     const themeOverrides = {
         // fontFamily: 'Inter, Avenir, Helvetica, Arial, sans-serif'
@@ -38,16 +33,8 @@ export default function App() {
 
     return (
         <SocketContext.Provider value={socket}>
-            <ColorSchemeProvider
-                colorScheme={colorScheme}
-                toggleColorScheme={toggleColorScheme}
-            >
-                <MantineProvider
-                    theme={{ colorScheme, ...themeOverrides }}
-                    withNormalizeCSS
-                    withGlobalStyles
-                    withCSSVariables
-                >
+            <ColorSchemeProvider colorScheme={colorScheme} toggleColorScheme={toggleColorScheme}>
+                <MantineProvider theme={{ colorScheme, ...themeOverrides }} withNormalizeCSS withGlobalStyles withCSSVariables>
                     <BrowserRouter>
                         <Routes>
                             <Route

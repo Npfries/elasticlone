@@ -8,6 +8,11 @@ export enum MigrationTypes {
     RENAME_INDEX,
 }
 
+export enum SocketEvents {
+    MIGRATIONS_COMPLETED = 'MIGRATIONS_COMPLETED',
+    MIGRATION_CREATED = 'MIGRATION_CREATED',
+}
+
 export enum MigrationStepDefinitions {
     CREATE_INDEX_SOURCE = 'Create source index',
     CREATE_INDEX_DESTINATION = 'Create destination index',
