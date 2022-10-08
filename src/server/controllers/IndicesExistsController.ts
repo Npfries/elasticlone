@@ -9,7 +9,8 @@ export class IndicesExistsController extends Controller {
         super.getOneWithSubId(async (req: any, res) => {
             const hostId = parseInt(req.params.id)
             const index = req.params.subId
-            return await elasticsearchService.indexExists(hostId, index)
+            const result = await elasticsearchService.indexExists(hostId, index)
+            res.send(result)
         })
     }
 }

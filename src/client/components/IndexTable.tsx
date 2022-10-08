@@ -1,4 +1,4 @@
-import { Paper, Table, ActionIcon, Tabs, Menu, Modal } from '@mantine/core'
+import { Paper, Table, ActionIcon, Tabs, Menu, Modal, LoadingOverlay } from '@mantine/core'
 import { Host } from '@prisma/client'
 import { IconCopy, IconList, IconMessageCircle, IconSettings, IconTextCaption, IconTrash } from '@tabler/icons'
 import axios from 'axios'
@@ -23,6 +23,7 @@ export default function IndexTable(props: IIndexTableProps) {
     const [modalContent, setModalContent] = useState<JSX.Element>(<></>)
     const [modalOpen, setModalOpen] = useState(false)
     const [modalTitle, setModalTitle] = useState('')
+    const [inProgress, setInProgress] = useState(false)
 
     const loadIndices = async () => {
         if (!props?.host?.id) return
@@ -34,8 +35,13 @@ export default function IndexTable(props: IIndexTableProps) {
         loadIndices()
     }, [props.host])
 
-    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
-        loadIndices()
+    socket?.on(SocketEvents.MIGRATIONS_STARTED, () => {
+        setInProgress(true)
+    })
+
+    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, async () => {
+        await loadIndices()
+        setInProgress(false)
     })
 
     const handleDeleteIndexClicked = async (index: string) => {
@@ -140,7 +146,8 @@ export default function IndexTable(props: IIndexTableProps) {
                         <b>Index Templates</b>
                     </Tabs.Tab>
                 </Tabs.List>
-                <Tabs.Panel value="indices" pt="xs">
+                <Tabs.Panel value="indices" pt="xs" style={{ position: 'relative' }}>
+                    <LoadingOverlay visible={inProgress} overlayBlur={2} />
                     <Table captionSide="bottom">
                         <caption>Excludes internal indices</caption>
                         <thead>

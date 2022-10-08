@@ -42,16 +42,8 @@ export default function HostPage(props: IHostPageProps) {
                     {host?.url}
                 </Group>
                 <Group position="apart" mt="xs">
-                    <Badge color="gray">
-                        {info !== undefined
-                            ? `${info.type}@${info.version?.number}`
-                            : null}
-                    </Badge>
-                    {info?.version !== undefined ? (
-                        <Badge color="teal">Connected</Badge>
-                    ) : (
-                        <Badge color="red">Disconnected</Badge>
-                    )}
+                    <Badge color="gray">{info !== undefined && `${info.type}@${info.version?.number}`}</Badge>
+                    {info?.version !== undefined ? <Badge color="teal">Connected</Badge> : <Badge color="red">Disconnected</Badge>}
                 </Group>
             </Paper>
             <SimpleGrid mt="sm" cols={2}>
