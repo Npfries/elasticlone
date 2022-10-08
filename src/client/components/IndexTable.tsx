@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useContext, useEffect, useState } from 'react'
 import { SocketEvents } from '../../lib/enums'
 import { SocketContext } from '../lib/SocketContext'
+import IndexCopyModal from './Indices/IndexCopyModal'
 import IndexRenameModal from './Indices/IndexRenameModal'
 
 interface IIndexTableProps {
@@ -55,18 +56,21 @@ export default function IndexTable(props: IIndexTableProps) {
             ></IndexRenameModal>
         )
         setModalOpen(true)
+    }
 
-        // const newName = `${index}_copy`
-        // const migration = {
-        //     hostId: props.host?.id,
-        //     name: `rename_${index}_to_${newName}`,
-        //     type: MigrationTypes.RENAME_INDEX,
-        //     data: {
-        //         source: index,
-        //         destination: newName,
-        //     },
-        // }
-        // await axios.post('/api/migration', migration)
+    const handleCopyIndexClicked = async (index: string) => {
+        setModalTitle('Copy Index')
+        setModalContent(
+            <IndexCopyModal
+                host={props.host as Host}
+                existingIndices={indices}
+                index={index}
+                onSubmit={() => {
+                    setModalOpen(false)
+                }}
+            ></IndexCopyModal>
+        )
+        setModalOpen(true)
     }
 
     const indicesRows = indices.map((index, i) => {
@@ -93,7 +97,14 @@ export default function IndexTable(props: IIndexTableProps) {
                             >
                                 Rename
                             </Menu.Item>
-                            <Menu.Item icon={<IconCopy size={14} />}>Copy Index</Menu.Item>
+                            <Menu.Item
+                                onClick={() => {
+                                    handleCopyIndexClicked(index)
+                                }}
+                                icon={<IconCopy size={14} />}
+                            >
+                                Copy Index
+                            </Menu.Item>
                             <Menu.Divider />
                             <Menu.Label>Danger zone</Menu.Label>
                             <Menu.Item

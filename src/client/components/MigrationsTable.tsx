@@ -1,10 +1,10 @@
-import { Paper, Timeline, Text, Accordion, Tabs, List, ThemeIcon, ActionIcon, Group } from '@mantine/core'
+import { Paper, Timeline, Text, Accordion, Tabs, List, ThemeIcon, ActionIcon, Group, Progress, Loader } from '@mantine/core'
 import { Host } from '@prisma/client'
-import { IconCircleCheck, IconList, IconPlayerSkipBack, IconPlayerSkipForward } from '@tabler/icons'
+import { IconCircle, IconCircleCheck, IconList, IconPlayerSkipBack, IconPlayerSkipForward, IconPlayerTrackNext } from '@tabler/icons'
 import axios from 'axios'
 import { useContext, useEffect, useState } from 'react'
 import { MigrationSteps } from '../../lib/constants'
-import { MigrationTypes, SocketEvents } from '../../lib/enums'
+import { MigrationTypes, MigrationValues, SocketEvents } from '../../lib/enums'
 import { SocketContext } from '../lib/SocketContext'
 import ServerLogs from './ServerLogs'
 
@@ -15,6 +15,7 @@ interface IMigrationsTableProps {
 export default function MigrationsTable(props: IMigrationsTableProps) {
     const [migrations, setMigrations] = useState<any[]>([])
     const [executedCount, setExecutedCount] = useState(0)
+    const [inProgress, setInProgress] = useState(false)
     const socket = useContext(SocketContext)
 
     const loadMigrations = async () => {
@@ -48,16 +49,40 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
         setExecutedCount(executedCount - 1)
     })
 
+    socket?.on(SocketEvents.MIGRATIONS_STARTED, () => {
+        setInProgress(true)
+    })
+
+    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
+        setInProgress(false)
+    })
+
     const migrationStepList = (type: MigrationTypes) => {
         return MigrationSteps[type].UP.map((val, i) => <List.Item key={i}>{val}</List.Item>)
     }
 
-    const handleUpMigrationClicked = async () => {
-        const { data, status } = await axios.post(`/api/up/${props.host?.id}`)
+    const handleUpAllMigrationClicked = async () => {
+        const { data, status } = await axios.post(`/api/up/${props.host?.id}`, {
+            value: MigrationValues.ALL,
+        })
     }
 
-    const handleDownMigrationClicked = async () => {
-        const { data, status } = await axios.post(`/api/down/${props.host?.id}`)
+    const handleUpOneMigrationClicked = async () => {
+        const { data, status } = await axios.post(`/api/up/${props.host?.id}`, {
+            value: MigrationValues.ONE,
+        })
+    }
+
+    const handleDownAllMigrationClicked = async () => {
+        const { data, status } = await axios.post(`/api/down/${props.host?.id}`, {
+            value: MigrationValues.ALL,
+        })
+    }
+
+    const handleDownOneMigrationClicked = async () => {
+        const { data, status } = await axios.post(`/api/down/${props.host?.id}`, {
+            value: MigrationValues.ONE,
+        })
     }
 
     const rows = migrations.map((migration, i) => (
@@ -76,8 +101,8 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
                                 size="sm"
                                 center
                                 icon={
-                                    <ThemeIcon color="teal" size={24} radius="xl">
-                                        <IconCircleCheck size={16} />
+                                    <ThemeIcon variant="light" color={migration.executed ? 'teal' : 'gray'} size={24} radius="xl">
+                                        {migration.executed ? <IconCircleCheck size={16} /> : <IconCircle size={16}></IconCircle>}
                                     </ThemeIcon>
                                 }
                             >
@@ -109,22 +134,45 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
                 <Tabs.Panel value="migrations" pt="sm">
                     <Group>
                         <ActionIcon
+                            disabled={inProgress || executedCount === 0}
                             variant="light"
                             onClick={() => {
-                                handleDownMigrationClicked()
+                                handleDownAllMigrationClicked()
                             }}
                         >
-                            <IconPlayerSkipBack size={18} />
+                            <IconPlayerSkipBack size={20} />
+                        </ActionIcon>
+
+                        <ActionIcon
+                            disabled={inProgress || executedCount === 0}
+                            variant="light"
+                            onClick={() => {
+                                handleDownOneMigrationClicked()
+                            }}
+                        >
+                            <IconPlayerSkipBack size={20} />
                         </ActionIcon>
                         <ActionIcon
+                            disabled={inProgress || executedCount === migrations.length}
                             variant="light"
                             onClick={() => {
-                                handleUpMigrationClicked()
+                                handleUpOneMigrationClicked()
                             }}
                         >
-                            <IconPlayerSkipForward size={18} />
+                            <IconPlayerSkipForward size={20} />
                         </ActionIcon>
+                        <ActionIcon
+                            disabled={inProgress || executedCount === migrations.length}
+                            variant="light"
+                            onClick={() => {
+                                handleUpAllMigrationClicked()
+                            }}
+                        >
+                            <IconPlayerTrackNext size={20}></IconPlayerTrackNext>
+                        </ActionIcon>
+                        {inProgress ? <Loader size={24}></Loader> : <></>}
                     </Group>
+                    <Progress value={Math.floor(executedCount ? (executedCount / migrations.length) * 100 : 0)} mt="sm"></Progress>
                     <Timeline mt="lg" active={executedCount ? executedCount - 1 : undefined} bulletSize={24} lineWidth={4}>
                         {rows}
                     </Timeline>

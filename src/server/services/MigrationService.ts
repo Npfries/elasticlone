@@ -1,7 +1,7 @@
 import { Host, Migration } from '@prisma/client'
 import { Umzug } from 'umzug'
 import { MigraitonActions, MigrationSteps } from '../../lib/constants'
-import { MigrationTypes, SocketEvents } from '../../lib/enums'
+import { MigrationTypes, MigrationValues, SocketEvents } from '../../lib/enums'
 import { CustomUmzugStorage } from '../lib/CustomUmzugStorage'
 import { DatabaseService } from './DatabaseService'
 import { ElasticdumpService } from './ElasticdumpService'
@@ -138,18 +138,21 @@ export class MigrationService {
         return result
     }
 
-    public async up(id: number) {
+    public async up(id: number, value: MigrationValues) {
+        this._socketService.sendToAll(SocketEvents.MIGRATIONS_STARTED)
         const umzug = await this._getUmzug(id)
-        await umzug.up()
+        const params = value === MigrationValues.ONE ? { step: 1 } : undefined
+        await umzug.up(params)
         this._socketService.sendToAll(SocketEvents.MIGRATIONS_COMPLETED)
         return
     }
 
-    public async down(id: number) {
+    public async down(id: number, value: MigrationValues) {
+        this._socketService.sendToAll(SocketEvents.MIGRATIONS_STARTED)
         const umzug = await this._getUmzug(id)
-        await umzug.down({
-            to: 0,
-        })
+        const params = value === MigrationValues.ONE ? { step: 1 } : { to: 0 }
+        // @ts-ignore
+        await umzug.down(params)
         this._socketService.sendToAll(SocketEvents.MIGRATIONS_COMPLETED)
         return
     }

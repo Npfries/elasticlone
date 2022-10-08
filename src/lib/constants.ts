@@ -14,6 +14,9 @@ interface migration {
     }
 }
 
+/**
+ * These must be in the same order as the keys are defined in @MigrationTypes
+ */
 export const MigrationSteps = {
     [MigrationTypes.RENAME_INDEX]: {
         UP: [
@@ -34,6 +37,14 @@ export const MigrationSteps = {
             MigrationStepDefinitions.UPDATE_ALIAS_FROM_DESTINATION_TO_SOURCE,
             MigrationStepDefinitions.DELETE_INDEX_DESTINATION,
         ],
+    },
+    [MigrationTypes.COPY_INDEX]: {
+        UP: [
+            MigrationStepDefinitions.COPY_SETTINGS_FROM_SOURCE_TO_DESTINATION,
+            MigrationStepDefinitions.COPY_MAPPINGS_FROM_SOURCE_TO_DESTINATION,
+            MigrationStepDefinitions.COPY_DATA_FROM_SOURCE_TO_DESTINATION,
+        ],
+        DOWN: [MigrationStepDefinitions.DELETE_INDEX_DESTINATION],
     },
 }
 

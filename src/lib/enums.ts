@@ -4,11 +4,22 @@ export enum PipelineTypes {
     ANALYZER,
 }
 
+/**
+ * This list is additive only, because they are stored in the db by value
+ */
 export enum MigrationTypes {
     RENAME_INDEX,
+    COPY_INDEX,
+}
+
+export enum MigrationValues {
+    ALL,
+    ONE,
+    TO,
 }
 
 export enum SocketEvents {
+    MIGRATIONS_STARTED = 'MIGRATIONS_STARTED',
     MIGRATIONS_COMPLETED = 'MIGRATIONS_COMPLETED',
     MIGRATION_CREATED = 'MIGRATION_CREATED',
     MIGRATION_LOGGED = 'MIGRATION_LOGGED',
