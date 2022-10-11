@@ -7,15 +7,17 @@ import { SocketEvents } from '../../lib/enums'
 import { SocketContext } from '../lib/SocketContext'
 import IndexCopyModal from './Indices/IndexCopyModal'
 import IndexCreateModal from './Indices/IndexCreateModal'
+import IndexEditModal from './Indices/IndexEditModal'
 import IndexRenameModal from './Indices/IndexRenameModal'
 
 interface IIndexTableProps {
     host?: Host
-}
-
-interface ITabs {
-    name: string
-    children: JSX.Element
+    info?: {
+        type: string
+        version: {
+            number: string
+        }
+    }
 }
 
 export default function IndexTable(props: IIndexTableProps) {
@@ -32,18 +34,34 @@ export default function IndexTable(props: IIndexTableProps) {
         setIndices(data)
     }
 
-    useEffect(() => {
-        loadIndices()
-    }, [])
-
-    socket?.on(SocketEvents.MIGRATIONS_STARTED, () => {
+    const migrationStartedHandler = () => {
         setInProgress(true)
-    })
+    }
 
-    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, async () => {
+    const migrationCompletedHandler = async () => {
         await loadIndices()
         setInProgress(false)
-    })
+    }
+
+    const socketSubscriptions = [
+        { event: SocketEvents.MIGRATIONS_STARTED, handler: migrationStartedHandler },
+        {
+            event: SocketEvents.MIGRATIONS_COMPLETED,
+            handler: migrationCompletedHandler,
+        },
+    ]
+
+    useEffect(() => {
+        loadIndices()
+        socketSubscriptions.forEach((sub) => {
+            socket?.on(sub.event, sub.handler)
+        })
+        return () => {
+            socketSubscriptions.forEach((sub) => {
+                socket?.off(sub.event, sub.handler)
+            })
+        }
+    }, [])
 
     const handleDeleteIndexClicked = async (index: string) => {
         await axios.delete(`/api/indices/${props.host?.id}/${index}`)
@@ -85,11 +103,27 @@ export default function IndexTable(props: IIndexTableProps) {
         setModalContent(
             <IndexCreateModal
                 host={props.host as Host}
+                info={props.info}
                 existingIndices={indices}
                 onSubmit={() => {
                     setModalOpen(false)
                 }}
             ></IndexCreateModal>
+        )
+        setModalOpen(true)
+    }
+
+    const handleEditIndexClicked = async (index: string) => {
+        setModalTitle('Edit Index')
+        setModalContent(
+            <IndexEditModal
+                host={props.host as Host}
+                index={index}
+                existingIndices={indices}
+                onSubmit={() => {
+                    setModalOpen(false)
+                }}
+            ></IndexEditModal>
         )
         setModalOpen(true)
     }
@@ -108,8 +142,14 @@ export default function IndexTable(props: IIndexTableProps) {
 
                         <Menu.Dropdown>
                             <Menu.Label>Index</Menu.Label>
-                            <Menu.Item icon={<IconSettings size={14} />}>Edit Mapping</Menu.Item>
-                            <Menu.Item icon={<IconMessageCircle size={14} />}>Edit Analyzer</Menu.Item>
+                            <Menu.Item
+                                onClick={() => {
+                                    handleEditIndexClicked(index)
+                                }}
+                                icon={<IconSettings size={14} />}
+                            >
+                                Edit
+                            </Menu.Item>
                             <Menu.Item
                                 onClick={() => {
                                     handleRenameIndexClicked(index)

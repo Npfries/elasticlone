@@ -11,6 +11,7 @@ export enum MigrationTypes {
     RENAME_INDEX,
     COPY_INDEX,
     CREATE_INDEX,
+    EDIT_INDEX,
 }
 
 export enum MigrationValues {
@@ -57,4 +58,10 @@ export enum MigrationStepDefinitions {
 
     CHECK_INDEX_EXISTS_SOURCE = 'Verify source index exists',
     CHECK_INDEX_EXISTS_DESTINATION = 'Verify destination index exists',
+
+    BACKUP_INDEX_PARAMS_SOURCE = 'Backup source index settings, aliases, and mappings',
+    BACKUP_INDEX_PARAMS_DESTINATION = 'Backup destination index settings, aliases, and mappings',
+
+    RESTORE_INDEX_PARAMS_SOURCE = 'Restore source index settings, aliases, and mappings',
+    RESTORE_INDEX_PARAMS_DESTINATION = 'Restore destination index settings, aliases, and mappings',
 }

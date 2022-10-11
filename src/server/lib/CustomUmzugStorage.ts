@@ -39,7 +39,7 @@ export class CustomUmzugStorage implements UmzugStorage {
     public async executed(): Promise<string[]> {
         const exists = await this._elasticsearchService.indexExists(this._hostId, MIGRATIONS_INDEX)
         if (!exists) {
-            await this._elasticsearchService.createIndex(this._hostId, MIGRATIONS_INDEX)
+            await this._elasticsearchService.createIndex(this._hostId, MIGRATIONS_INDEX, {})
         }
         const migrations = await this._elasticsearchService.getMigrations(this._hostId)
         const result = migrations.map((migration: any) => migration.name)

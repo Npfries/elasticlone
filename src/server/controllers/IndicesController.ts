@@ -14,6 +14,13 @@ export class IndicesController extends Controller {
             res.send(result)
         })
 
+        super.getOneWithSubId(async (req: any, res) => {
+            const hostId = parseInt(req.params.id)
+            const index = req.params.subId
+            const result = await elasticsearchService.getIndex(hostId, index)
+            res.send(result)
+        })
+
         super.deleteWithSubId(async (req: any, res) => {
             const id = parseInt(req.params.id)
             const index = req.params.subId

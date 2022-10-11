@@ -18,6 +18,12 @@ import { UpController } from './server/controllers/UpController'
 import { DownController } from './server/controllers/DownController'
 import { IndicesExistsController } from './server/controllers/IndicesExistsController'
 
+const apm = require('elastic-apm-node').start({
+    serviceName: 'elasticlone api',
+    // secretToken: '',
+    serverUrl: 'https://apm.local.dispiro.com',
+})
+
 const PORT = 3000
 
 const start = async () => {

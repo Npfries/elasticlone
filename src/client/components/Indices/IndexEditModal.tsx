@@ -7,38 +7,40 @@ import CodeEditor from '../CodeEditor'
 
 interface IIndexCreateModal {
     host: Host
+    index: string
     existingIndices: string[]
     onSubmit: Function
-    info: any
 }
 
-const initialJson = {
-    aliases: {},
-    mappings: {},
-    settings: {},
-}
-
-export default function IndexCreateModal(props: IIndexCreateModal) {
-    const [name, setName] = useState('')
-    const [indices, setIndices] = useState(props.existingIndices)
+export default function IndexEditModal(props: IIndexCreateModal) {
     const [error, setError] = useState('')
-    const [json, setJson] = useState(JSON.stringify(initialJson, null, 4))
+    const [json, setJson] = useState('{}')
+
+    const loadIndex = async () => {
+        const { data } = await axios.get(`/api/indices/${props.host.id}/${props.index}`)
+        const params = data.body[props.index]
+
+        // read only properties that are added by elasticsearch
+        delete params.settings.index.creation_date
+        delete params.settings.index.uuid
+        delete params.settings.index.version
+        delete params.settings.index.provided_name
+
+        setJson(JSON.stringify(params, null, 4))
+    }
 
     useEffect(() => {
-        if (props.existingIndices.some((index) => index === name)) {
-            setError('That index already exists')
-        } else {
-            setError('')
-        }
-    }, [name])
+        loadIndex()
+    }, [])
 
     const handleSumbitClicked = async () => {
         const migration = {
             hostId: props.host?.id,
-            name: `create_index_${name}`,
-            type: MigrationTypes.CREATE_INDEX,
+            name: `edit_index_${props.index}`,
+            type: MigrationTypes.EDIT_INDEX,
             data: {
-                destination: name,
+                source: props.index,
+                destination: '.elasticlone_migration_tmp',
                 params: json,
             },
         }
@@ -48,25 +50,9 @@ export default function IndexCreateModal(props: IIndexCreateModal) {
 
     return (
         <>
-            <Select
-                searchable
-                creatable={true}
-                getCreateLabel={(query) => `+ Create ${query}`}
-                onCreate={(query) => {
-                    setIndices([...indices, query])
-                    return query
-                }}
-                label="Name"
-                data={indices}
-                value={name}
-                onChange={(value) => {
-                    if (value) setName(value)
-                }}
-                error={error}
-            ></Select>
-            {name && !error ? (
+            {props.index && !error ? (
                 <Text mt="sm" mb="sm">
-                    This will create a migration for creating <b>{name}</b>
+                    This will create a migration for creating a new version of <b>{props.index}</b>
                 </Text>
             ) : (
                 <Space h="md"></Space>
@@ -85,7 +71,7 @@ export default function IndexCreateModal(props: IIndexCreateModal) {
             <Group position="right" mt="sm">
                 <Button
                     variant="light"
-                    disabled={error !== '' || name === ''}
+                    disabled={error !== '' || props.index === ''}
                     onClick={() => {
                         handleSumbitClicked()
                     }}

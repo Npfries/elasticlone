@@ -10,9 +10,22 @@ export default function ServerLogs(props: IServerLogs) {
     const [logs, setLogs] = useState('')
     const socket = useContext(SocketContext)
 
-    socket?.on(props.jobId, (message: any) => {
+    const messageHandler = (message: any) => {
         setLogs(`${logs}${message}`)
-    })
+    }
+
+    const socketSubscriptions = [{ event: props.jobId, handler: messageHandler }]
+
+    useEffect(() => {
+        socketSubscriptions.forEach((sub) => {
+            socket?.on(sub.event, sub.handler)
+        })
+        return () => {
+            socketSubscriptions.forEach((sub) => {
+                socket?.off(sub.event, sub.handler)
+            })
+        }
+    }, [])
 
     return (
         <Group mt="md" grow>

@@ -1,8 +1,9 @@
 import { Host, Migration } from '@prisma/client'
 import { Umzug } from 'umzug'
-import { MigraitonActions, MigrationSteps } from '../../lib/constants'
+import { MigrationSteps } from '../../lib/constants'
 import { MigrationTypes, MigrationValues, SocketEvents } from '../../lib/enums'
 import { CustomUmzugStorage } from '../lib/CustomUmzugStorage'
+import { MigraitonActions } from '../lib/migrations/MigrationActions'
 import { DatabaseService } from './DatabaseService'
 import { ElasticdumpService } from './ElasticdumpService'
 import { ElasticsearchService } from './ElasticsearchService'
@@ -71,13 +72,14 @@ export class MigrationService {
         return parsedMigrations
     }
 
-    private _getMigrationFunction(host: Host, migration: Migration) {
+    private _getMigrationFunction(host: Host, migration: any) {
         const steps = MigrationSteps[migration.type as MigrationTypes]
         const upActions = steps.UP.map((step) => MigraitonActions[step])
         const downActions = steps.DOWN.map((step) => MigraitonActions[step])
         const context = {
             elasticsearchService: this._elasticsearchService,
             elasticdumpService: this._elasticdumpService,
+            databaseService: this._databaseService,
             host,
             migration,
         }

@@ -64,6 +64,14 @@ export class ElasticsearchService {
         }
     }
 
+    public async getIndex(hostId: number, index: string) {
+        const client = await this._getClient(hostId)
+        const result = await client.indices.get({
+            index,
+        })
+        return result
+    }
+
     public async deleteIndex(id: number, index: string) {
         const client = await this._getClient(id)
         const result = await client.indices.delete({
@@ -72,12 +80,18 @@ export class ElasticsearchService {
         return result
     }
 
-    public async createIndex(id: number, name: string) {
+    public async createIndex(id: number, name: string, params: any) {
         const client = await this._getClient(id)
-        const result = await client.indices.create({
-            index: name,
-        })
-        return result
+        try {
+            const result = await client.indices.create({
+                index: name,
+                body: params,
+            })
+            return result
+        } catch (e) {
+            console.log('ERROR: ', JSON.stringify(e, null, 4))
+            throw new Error()
+        }
     }
 
     public async getMigrations(hostId: number) {
@@ -103,7 +117,9 @@ export class ElasticsearchService {
                 index: name,
             })
             return result.body
-        } catch (e) {}
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     public async index(hostId: number, index: string, doc: { [key: string]: any }) {
@@ -115,7 +131,9 @@ export class ElasticsearchService {
                 body: doc,
             })
             return result
-        } catch (e) {}
+        } catch (e) {
+            console.error(e)
+        }
     }
 
     public async deleteDocument(hostId: number, index: string, where: { [key: string]: any }) {
@@ -141,6 +159,25 @@ export class ElasticsearchService {
                 },
             })
             return result
-        } catch (e) {}
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
+    public async getFirstDocument(hostId: number, index: string, query: any) {
+        try {
+            const client = await this._getClient(hostId)
+            const result = await client.search({
+                index: index,
+                body: {
+                    query,
+                },
+            })
+            console.log(result)
+            const firstDocument = result.body.hits?.hits[0]?._source
+            return firstDocument
+        } catch (e) {
+            console.error(e)
+        }
     }
 }

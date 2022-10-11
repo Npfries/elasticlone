@@ -63,11 +63,6 @@ export default function IndexRenameModal(props: IIndexRenameModal) {
             ) : (
                 <Space h="md"></Space>
             )}
-            {() => {
-                if (name !== '' && error !== '') {
-                    return
-                }
-            }}
             <Group position="right">
                 <Button
                     variant="light"

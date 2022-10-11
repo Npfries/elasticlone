@@ -25,37 +25,65 @@ export default function MigrationsTable(props: IMigrationsTableProps) {
         }
     }
 
+    const incrementCount = () => {
+        setExecutedCount(executedCount + 1)
+    }
+
+    const decrementCount = () => {
+        setExecutedCount(executedCount - 1)
+    }
+
+    const setInProgressTrue = () => {
+        setInProgress(true)
+    }
+
+    const setInProgressFalse = () => {
+        setInProgress(false)
+    }
+
+    const socketSubscriptions = [
+        {
+            event: SocketEvents.MIGRATION_CREATED,
+            handler: loadMigrations,
+        },
+        {
+            event: SocketEvents.MIGRATIONS_COMPLETED,
+            handler: loadMigrations,
+        },
+        {
+            event: SocketEvents.MIGRATION_LOGGED,
+            handler: incrementCount,
+        },
+        {
+            event: SocketEvents.MIGRATION_UNLOGGED,
+            handler: decrementCount,
+        },
+        {
+            event: SocketEvents.MIGRATIONS_STARTED,
+            handler: setInProgressTrue,
+        },
+        {
+            event: SocketEvents.MIGRATIONS_COMPLETED,
+            handler: setInProgressFalse,
+        },
+    ]
+
     useEffect(() => {
-        setExecutedCount(migrations.reduce((acc, val) => (val.executed ? acc + 1 : acc), 0))
+        const m = [...migrations]
+        setExecutedCount(m.reduce((acc, val) => (val.executed ? acc + 1 : acc), 0))
     }, [migrations])
 
     useEffect(() => {
         if (props.host?.id) loadMigrations()
+        socketSubscriptions.forEach((sub) => {
+            socket?.on(sub.event, sub.handler)
+        })
+        return () => {
+            socketSubscriptions.forEach((sub) => {
+                socket?.off(sub.event, sub.handler)
+            })
+        }
     }, [])
-
-    socket?.on(SocketEvents.MIGRATION_CREATED, () => {
-        loadMigrations()
-    })
-
-    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
-        loadMigrations()
-    })
-
-    socket?.on(SocketEvents.MIGRATION_LOGGED, () => {
-        setExecutedCount(executedCount + 1)
-    })
-
-    socket?.on(SocketEvents.MIGRATION_UNLOGGED, () => {
-        setExecutedCount(executedCount - 1)
-    })
-
-    socket?.on(SocketEvents.MIGRATIONS_STARTED, () => {
-        setInProgress(true)
-    })
-
-    socket?.on(SocketEvents.MIGRATIONS_COMPLETED, () => {
-        setInProgress(false)
-    })
 
     const migrationStepList = (type: MigrationTypes) => {
         return MigrationSteps[type].UP.map((val, i) => <List.Item key={i}>{val}</List.Item>)
